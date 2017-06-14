@@ -1,0 +1,58 @@
+\IfFileExists{t2doc.cls}{
+    \documentclass[documentation]{subfiles}
+}{
+    \errmessage{Error: could not find 't2doc.cls'}
+}
+
+\begin{document}
+
+\trantitle
+    {rustExample} % Plugin name
+    {T2 Rust plugin example} % Short description
+    {Tranalyzer Development Team} % author(s)
+
+\section{rustExample}\label{s:rustExample}
+
+\subsection{Description}
+This plugin is an example on how to use the {\tt t2plugin} crate to create a Tranalyzer2 plugin
+in Rust.
+
+\begin{description}
+    \item[{\tt t2plugin} crate source:] {\url{https://github.com/Tranalyzer/t2plugin}}
+    \item[{\tt t2plugin} crate documentation:] {\url{https://tranalyzer.com/rustdoc/t2plugin/}}
+\end{description}
+
+This plugin performs the following three tasks for each flow:
+
+\begin{enumerate}
+    \item Compute the on-wire throughput (from layer 2). This demonstrates how to output a simple
+        column and how to access the {\tt Packet} and {\tt Flow} structures.
+    \item Extract the {\tt PHPSESSID} cookies from HTTP. This demonstrates how to output a
+        compound column and how to parse text protocols.
+    \item Extract the Server Name Indication (SNI) from TLS handshakes. This demonstrates how to
+        parse binary protocols.
+\end{enumerate}
+
+\subsection{Flow File Output}
+The rustExample plugin outputs the following columns:
+\begin{longtable}{llll}
+    {\bf Column} & {\bf Type} & {\bf Description}\\
+    \hline\endhead
+    {\tt l2Throughput} & D & On-wire throughput in [bytes/s], computed from layer 2.\\
+    {\tt phpSessIds} & R:U8\_S & Repetitive compound: \nameref{phpSessId}.\\
+    {\tt tlsSni} & S & TLS handshake Server Name Indication (SNI) extension.\\
+\end{longtable}
+
+\subsubsection{phpSessId}\label{phpSessId}
+Each compound value in the {\tt phpSessIds} column is to be interpreted as follows:
+
+\begin{longtable}{rl}
+    {\bf 1st sub-value} & {\bf Description}\\
+    \hline\endhead
+    {\bf 0} & Cookie sent by the client in a {\tt Cookie} header\\
+    {\bf 1} & Cookie sent by the server in a {\tt Set-Cookie} header.\\
+\end{longtable}
+
+The 2nd sub-value contains the value of the {\tt PHPSESSID} cookie.
+
+\end{document}
