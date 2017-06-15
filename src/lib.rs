@@ -222,7 +222,7 @@ impl T2Plugin for RustExample {
         self.byte_count += packet.packet_raw_len as u64;
 
         // process payload of TCP packets
-        if packet.snap_l7_len > 0 && packet.l4_type == L4Type::TCP as u8 {
+        if packet.snap_l7_len > 0 && packet.l4_type() == L4Type::TCP {
             let mut slr = SliceReader::new(packet.l7_header());
 
             // extract the PHPSESSID cookie
