@@ -1,3 +1,3 @@
 INFILE = rustExample
 
-include ../../doc/Makefile.plugin
+include ../../../doc/Makefile.plugin

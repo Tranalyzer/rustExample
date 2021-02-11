@@ -23,7 +23,9 @@ use std::str;
 use std::collections::HashSet;
 
 use t2plugin::{T2Plugin, Header, BinaryType, output_string, output_num};
-use t2plugin::nethdr::{Packet, Flow, L4Type};
+use t2plugin::nethdr::L4Type;
+use t2plugin::packet::Packet;
+use t2plugin::flow::Flow;
 use t2plugin::slread::{SliceReader, TrimBytes};
 
 

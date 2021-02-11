@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Plugin name
 PLUGINNAME=rustExample
@@ -10,7 +10,7 @@ PLUGINORDER=654
 
 # code adapted from autogen_plugin.sh for rust/cargo instead of gcc/autotools
 
-source "$(dirname "$0")/../scripts/t2utils.sh"
+source "$(dirname "$0")/../../scripts/t2utils.sh"
 
 if [ -z "$PLUGINNAME" ] || [ "$PLUGINNAME" != "tranalyzer2" -a -z "$PLUGINORDER" ]; then
     printf "\n\e[0;31mPLUGINNAME and PLUGINORDER MUST be defined\e[0m\n\n"
@@ -54,8 +54,22 @@ function usage() {
 # https://stackoverflow.com/a/17841619
 function join_by { local IFS="$1"; shift; echo "$*"; }
 
+function test_define() {
+    cat << EOF | gcc -E -I"$T2HOME/utils/" -I"$T2HOME/tranalyzer2/src/" - > /dev/null 2>&1
+#include "tranalyzer.h"
+#include "networkHeaders.h"
+int main () {
+    #if $1
+    #else
+    #error "not defined"
+    #endif
+    return 0;
+}
+EOF
+}
+
 function set_features() {
-    local nh='../tranalyzer2/src/networkHeaders.h'
+    local nh='../../tranalyzer2/src/networkHeaders.h'
     if [ ! -w "Cargo.toml" ]; then
         fatal "Missing 'Cargo.toml' file"
     fi
@@ -73,11 +87,30 @@ function set_features() {
     for f in ETH_ACTIVATE IPV6_ACTIVATE SCTP_ACTIVATE SCTP_STATFINDEX MULTIPKTSUP T2_PRI_HDRDESC; do
         # get define value from networkHeaders.h
         local val="$(perl -nle 'print $1 if /^#define\s+'$f'\s+(\d+).*$/' "$nh")"
-        if [ "$val" == "1" ]; then
+        if [ "$f" == "IPV6_ACTIVATE" ] && [ "$val" == "2" ]; then
+            # Rust cfg features can be set or not set, so we have to use an additional feature to
+            # represent IPV6_ACTIVATE = 2
+            features1+=('"IPV6_DUALMODE"')
+            features2+=(IPV6_DUALMODE)
+        elif [ "$val" == "1" ]; then
             features1+=('"'$f'"')
             features2+=($f)
         fi
     done
+
+    if test_define 'SUBNET_INIT != 0'; then
+        features1+=('"SUBNET_INIT"')
+        features2+=(SUBNET_INIT)
+    fi
+    if test_define '(FDURLIMIT > 0 && FDLSFINDEX == 1)'; then
+        features1+=('"FLOW_LIFETIME"')
+        features2+=(FLOW_LIFETIME)
+    fi
+    if test_define '((SUBNET_INIT != 0) || (AGGREGATIONFLAG & (SUBNET | SRCIP | DSTIP)))'; then
+        features1+=('"FLOW_AGGREGATION"')
+        features2+=(FLOW_AGGREGATION)
+    fi
+
     local tmp1="$(join_by , "${features1[@]}")"
     perl -i -pe 's/(^t2plugin *= *\{.*features *= *\[)[^\[\]]*(\] *\}$)/\1'$tmp1'\2/' Cargo.toml
     local tmp2="$(join_by ' ' "${features2[@]}")"
