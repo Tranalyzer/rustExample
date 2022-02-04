@@ -1,12 +1,12 @@
 [package]
 name = "rustExample"
-version = "0.8.12"
+version = "0.8.13"
 authors = ["Tranalyzer2 dev. team"]
 
 # Keep the "t2plugin" dependency definition on a single line with the "features" key at the end
 # This is needed by autogen.sh to dynamically edit the features according to networkHeaders.h
 [dependencies]
-t2plugin = { version = "0.8.12", git = "https://github.com/Tranalyzer/t2plugin.git", tag = "v0.8.12", features = ["IPV6_DUALMODE","SCTP_STATFINDEX","FLOW_AGGREGATION","SUBNET_INIT","ETH_ACTIVATE","T2_PRI_HDRDESC"] }
+t2plugin = { version = "0.8.13", git = "https://github.com/Tranalyzer/t2plugin.git", tag = "v0.8.13", features = ["IPV6_DUALMODE","SCTP_STATFINDEX","FLOW_AGGREGATION","SUBNET_INIT","ETH_ACTIVATE","T2_PRI_HDRDESC"] }
 libc = "0.2.117"
 lazy_static = "1.4.0"
 
@@ -24,3 +24,4 @@ T2_PRI_HDRDESC = []
 SUBNET_INIT = []
 FLOW_LIFETIME = []
 FLOW_AGGREGATION = []
+LAPD_ACTIVATE = []
